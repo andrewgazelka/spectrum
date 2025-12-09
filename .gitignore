@@ -1,0 +1,6 @@
+results/
+*.pcap
+*.log
+*.json
+node_modules/
+.env

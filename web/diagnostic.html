@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>spectrum ssl test</title>
+  <style>
+    body {
+      font-family: monospace;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #1e1e1e;
+      color: #d4d4d4;
+    }
+    h1 {
+      color: #4ec9b0;
+    }
+    .result {
+      background: #252526;
+      padding: 15px;
+      margin: 10px 0;
+      border-left: 3px solid #007acc;
+    }
+    .error {
+      border-left-color: #f48771;
+    }
+    .success {
+      border-left-color: #4ec9b0;
+    }
+    pre {
+      overflow-x: auto;
+      font-size: 12px;
+    }
+    button {
+      background: #007acc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-family: monospace;
+    }
+    button:hover {
+      background: #005a9e;
+    }
+  </style>
+</head>
+<body>
+  <h1>spectrum ssl diagnostic</h1>
+  <p>this page tests if you're affected by the spectrum ssl interception bug</p>
+
+  <button onclick="runTests()">run test</button>
+
+  <div id="results"></div>
+
+  <script>
+    async function runTests() {
+      const results = document.getElementById('results');
+      results.innerHTML = '<div class="result">running tests...</div>';
+
+      const data = {
+        timestamp: new Date().toISOString(),
+        userAgent: navigator.userAgent,
+        tests: {}
+      };
+
+      try {
+        const ipInfo = await fetch('https://ipinfo.io/json').then(r => r.json());
+        data.ip = ipInfo.ip;
+        data.isp = ipInfo.org;
+        data.asn = ipInfo.org.match(/AS\d+/)?.[0];
+        data.city = ipInfo.city;
+        data.region = ipInfo.region;
+
+        results.innerHTML += `<div class="result">
+          <strong>your info</strong><br>
+          ip: ${data.ip}<br>
+          isp: ${data.isp}<br>
+          location: ${data.city}, ${data.region}
+        </div>`;
+
+        const isSpectrum = /AS(11426|11427|12271|20001|33363|33490|33491)/.test(data.asn);
+        if (isSpectrum) {
+          results.innerHTML += '<div class="result error">you are on spectrum - you might be affected</div>';
+        } else {
+          results.innerHTML += '<div class="result">you are not on spectrum - this bug probably doesnt affect you</div>';
+        }
+
+      } catch (e) {
+        results.innerHTML += `<div class="result error">failed to get ip info: ${e.message}</div>`;
+      }
+
+      const testUrls = [
+        'https://staging.drafted.ai/health',
+        'https://drafted.ai/',
+        'https://api-v2.drafted.ai/health'
+      ];
+
+      for (const url of testUrls) {
+        const start = Date.now();
+        try {
+          const response = await fetch(url, { mode: 'no-cors' });
+          const duration = Date.now() - start;
+          data.tests[url] = { success: true, duration };
+          results.innerHTML += `<div class="result success">${url} - ok (${duration}ms)</div>`;
+        } catch (e) {
+          const duration = Date.now() - start;
+          data.tests[url] = { success: false, error: e.message, duration };
+          results.innerHTML += `<div class="result error">${url} - failed: ${e.message}</div>`;
+        }
+      }
+
+      results.innerHTML += `<div class="result">
+        <strong>raw data (copy this if reporting):</strong>
+        <pre>${JSON.stringify(data, null, 2)}</pre>
+      </div>`;
+
+      results.innerHTML += `<div class="result">
+        if you're experiencing issues, please report at:<br>
+        <a href="https://codeberg.org/azzie/spectrum/issues" style="color: #4ec9b0;">https://codeberg.org/azzie/spectrum/issues</a>
+      </div>`;
+    }
+  </script>
+</body>
+</html>
