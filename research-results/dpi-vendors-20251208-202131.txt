@@ -1,0 +1,45 @@
+researching dpi vendors and known issues...
+=== known dpi vendors ===
+sandvine - packetlogic
+  cve search: https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=packetlogic
+  google: site:exploit-db.com packetlogic
+
+procera - packetlogic
+  cve search: https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=packetlogic
+  google: site:exploit-db.com packetlogic
+
+allot - netenforcer
+  cve search: https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=netenforcer
+  google: site:exploit-db.com netenforcer
+
+cisco - waas
+  cve search: https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=waas
+  google: site:exploit-db.com waas
+
+bluecoat - proxysg
+  cve search: https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=proxysg
+  google: site:exploit-db.com proxysg
+
+palo-alto - networks
+  cve search: https://cve.mitre.org/cgi-bin/cvekey.cgi?keyword=networks
+  google: site:exploit-db.com networks
+
+=== research questions ===
+- which dpi vendor does charter/spectrum use?
+- does the 0xff pattern match any known vendor error state?
+- are there cves for ssl inspection bugs in these products?
+- what equipment did time warner cable use before merger?
+- public procurement records for spectrum dpi purchases?
+=== academic research ===
+google scholar: isp ssl interception
+  https://scholar.google.com/scholar?q=isp+ssl+interception
+
+google scholar: transparent tls proxy
+  https://scholar.google.com/scholar?q=transparent+tls+proxy
+
+google scholar: middlebox tls failures
+  https://scholar.google.com/scholar?q=middlebox+tls+failures
+
+google scholar: deep packet inspection bugs
+  https://scholar.google.com/scholar?q=deep+packet+inspection+bugs
+

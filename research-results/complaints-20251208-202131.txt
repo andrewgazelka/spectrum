@@ -1,0 +1,23 @@
+=== reddit r/spectrum ===
+https://www.reddit.com/r/Spectrum/search/?q=spectrum+ssl+error
+https://www.reddit.com/r/Spectrum/search/?q=spectrum+https+error
+https://www.reddit.com/r/Spectrum/search/?q=spectrum+certificate+error
+https://www.reddit.com/r/Spectrum/search/?q=charter+ssl
+https://www.reddit.com/r/Spectrum/search/?q=spectrum+err_ssl_protocol_error
+https://www.reddit.com/r/Spectrum/search/?q=spectrum+cloudflare
+
+=== twitter/x ===
+https://twitter.com/search?q=spectrum%20ssl%20error
+https://twitter.com/search?q=charter%20https%20broken
+https://twitter.com/search?q=spectrum%20tls%20error
+https://twitter.com/search?q=@GetSpectrum%20ssl
+
+=== github issues ===
+https://github.com/search?q=spectrum+ssl&type=issues
+https://github.com/search?q=charter+tls&type=issues
+https://github.com/search?q=isp+ssl+interception&type=issues
+
+=== stack overflow ===
+https://stackoverflow.com/search?q=spectrum+ssl
+https://stackoverflow.com/search?q=charter+ssl+error
+https://stackoverflow.com/search?q=isp+breaking+tls

@@ -1,0 +1,33 @@
+researching spectrum legal/regulatory history...
+=== fcc actions ===
+search fcc.gov for:
+  - charter communications enforcement
+  - spectrum complaints
+  - charter consent decree
+https://www.fcc.gov/enforcement/orders?search=charter
+https://www.fcc.gov/enforcement/orders?search=spectrum
+https://docs.fcc.gov/public/attachments/DOC-344159A1.pdf
+
+=== lawsuits ===
+google: charter communications class action
+  https://www.google.com/search?q=charter+communications+class+action
+
+google: spectrum lawsuit ssl
+  https://www.google.com/search?q=spectrum+lawsuit+ssl
+
+google: charter securities fraud
+  https://www.google.com/search?q=charter+securities+fraud
+
+google: spectrum consumer protection
+  https://www.google.com/search?q=spectrum+consumer+protection
+
+=== state ag actions ===
+search for state attorney general actions against charter/spectrum:
+  - ny ag charter spectrum
+  - california ag charter
+  - state attorneys general charter settlement
+=== net neutrality violations ===
+previous charter/spectrum net neutrality issues:
+  - throttling
+  - blocking
+  - paid prioritization

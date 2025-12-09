@@ -98,6 +98,7 @@ client-tests/       tests you run if you're on spectrum
 server-analysis/    scripts for analyzing server logs
 web/                diagnostic page and report collector
 research/           scripts to research spectrum practices
+research-results/   precomputed research data (ip ranges, policy pages, etc)
 results/            where test output goes (created by tests)
 ```
 

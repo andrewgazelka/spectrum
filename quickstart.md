@@ -44,6 +44,16 @@ node report-collector.js
 
 reports get saved to `results/web-reports/`.
 
+## precomputed data
+
+check `research-results/` for:
+- 5600+ spectrum ip ranges across 15 asns
+- downloaded network management policy pages
+- asn/company mapping
+- see summary.md for overview
+
+this was all generated automatically, no spectrum access needed.
+
 ## requirements
 
 client tests need:
