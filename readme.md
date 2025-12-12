@@ -2,36 +2,26 @@
 
 detect spectrum/charter ssl interception bugs.
 
-## install
+## run (one-liner)
 
 **macOS (Apple Silicon)**
 ```bash
-curl -L https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-aarch64-apple-darwin.tar.gz | tar xz
-./spectrum
+curl -sL https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-aarch64-apple-darwin.tar.gz | tar xz -C /tmp && /tmp/spectrum
 ```
 
 **macOS (Intel)**
 ```bash
-curl -L https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-x86_64-apple-darwin.tar.gz | tar xz
-./spectrum
+curl -sL https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-x86_64-apple-darwin.tar.gz | tar xz -C /tmp && /tmp/spectrum
 ```
 
 **Linux**
 ```bash
-curl -L https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-x86_64-unknown-linux-gnu.tar.gz | tar xz
-./spectrum
+curl -sL https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-x86_64-unknown-linux-gnu.tar.gz | tar xz -C /tmp && /tmp/spectrum
 ```
 
 **Windows (PowerShell)**
 ```powershell
-Invoke-WebRequest -Uri https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-x86_64-pc-windows-msvc.zip -OutFile spectrum.zip
-Expand-Archive spectrum.zip
-.\spectrum\spectrum.exe
-```
-
-**From source**
-```bash
-cargo install --git https://github.com/andrewgazelka/spectrum
+irm https://github.com/andrewgazelka/spectrum/releases/latest/download/spectrum-x86_64-pc-windows-msvc.zip -OutFile $env:TEMP\s.zip; Expand-Archive $env:TEMP\s.zip $env:TEMP\s -Force; & $env:TEMP\s\spectrum.exe
 ```
 
 ## what it does
