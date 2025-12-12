@@ -307,37 +307,41 @@ async fn main() -> color_eyre::Result<()> {
     let cli = <Cli as clap::Parser>::parse();
 
     let filter = if cli.verbose {
-        "spectrum=debug,info"
+        tracing::level_filters::LevelFilter::DEBUG
     } else {
-        "spectrum=info,warn"
+        tracing::level_filters::LevelFilter::INFO
     };
 
-    tracing_subscriber::fmt().with_env_filter(filter).init();
+    tracing_subscriber::fmt()
+        .with_max_level(filter)
+        .without_time()
+        .with_target(false)
+        .init();
 
     std::fs::create_dir_all(&cli.output).wrap_err("failed to create output directory")?;
 
     let timestamp = chrono::Utc::now().format("%Y%m%d-%H%M%S").to_string();
 
-    println!("spectrum ssl bug test - {timestamp}");
-    println!("========================================\n");
+    tracing::info!("spectrum ssl bug test - {}", timestamp);
+    tracing::info!("========================================\n");
 
-    println!("collecting system info...");
+    tracing::info!("collecting system info...");
     let ip_info = match fetch_ip_info().await {
         Ok(info) => {
-            println!("your ip: {}", info.ip);
+            tracing::info!(ip = %info.ip, "your ip");
             if let Some(ref city) = info.city {
-                println!("city: {city}");
+                tracing::info!(city = %city);
             }
             if let Some(ref region) = info.region {
-                println!("region: {region}");
+                tracing::info!(region = %region);
             }
             if let Some(ref org) = info.org {
-                println!("org: {org}");
+                tracing::info!(org = %org);
             }
             Some(info)
         }
         Err(e) => {
-            println!("warning: could not fetch IP info: {e}");
+            tracing::warn!("could not fetch IP info: {e}");
             None
         }
     };
@@ -350,44 +354,44 @@ async fn main() -> color_eyre::Result<()> {
         .unwrap_or(false);
 
     if !is_spectrum {
-        println!("\nwarning: you don't appear to be on spectrum");
-        println!("this test is designed for spectrum users but will run anyway\n");
+        tracing::warn!("you don't appear to be on spectrum");
+        tracing::warn!("this test is designed for spectrum users but will run anyway\n");
     } else {
-        println!("\ndetected spectrum connection\n");
+        tracing::info!("detected spectrum connection\n");
     }
 
-    println!("running TLS 1.2 test...");
+    tracing::info!("running TLS 1.2 test...");
     let tls12 = test_tls_raw(&cli.host, TEST_PORT, TlsVersion::Tls12).await;
     if tls12.success {
-        println!("  TLS 1.2: OK");
+        tracing::info!("  TLS 1.2: OK");
     } else {
-        println!(
+        tracing::error!(
             "  TLS 1.2: FAILED - {}",
             tls12.error.as_deref().unwrap_or("unknown error")
         );
     }
 
-    println!("running TLS 1.3 test...");
+    tracing::info!("running TLS 1.3 test...");
     let tls13 = test_tls_raw(&cli.host, TEST_PORT, TlsVersion::Tls13).await;
     if tls13.success {
-        println!("  TLS 1.3: OK");
+        tracing::info!("  TLS 1.3: OK");
     } else {
-        println!(
+        tracing::error!(
             "  TLS 1.3: FAILED - {}",
             tls13.error.as_deref().unwrap_or("unknown error")
         );
     }
 
-    println!("\nrunning raw TLS capture test...");
+    tracing::info!("running raw TLS capture test...");
     let (raw_bytes, raw_msg) = test_tls_with_raw_capture(&cli.host, TEST_PORT);
-    println!("  raw capture: {raw_msg}");
+    tracing::debug!("  raw capture: {raw_msg}");
 
     let raw_bytes_hex = raw_bytes.as_ref().map(|b| bytes_to_hex(b));
     if let Some(ref hex) = raw_bytes_hex {
         if hex.len() <= 100 {
-            println!("  first bytes: {hex}");
+            tracing::debug!("  first bytes: {hex}");
         } else {
-            println!("  first bytes: {}...", &hex[..100]);
+            tracing::debug!("  first bytes: {}...", &hex[..100]);
         }
     }
 
@@ -396,12 +400,12 @@ async fn main() -> color_eyre::Result<()> {
         .map(|b| detect_0xff_pattern(b))
         .unwrap_or(false);
 
-    println!("\nrunning IPv6 test...");
+    tracing::info!("running IPv6 test...");
     let ipv6 = test_ipv6(&cli.host).await;
     if ipv6.success {
-        println!("  IPv6: OK");
+        tracing::info!("  IPv6: OK");
     } else {
-        println!(
+        tracing::warn!(
             "  IPv6: FAILED - {}",
             ipv6.error.as_deref().unwrap_or("not available")
         );
@@ -409,16 +413,16 @@ async fn main() -> color_eyre::Result<()> {
 
     let bug_detected = tls12.has_0xff_pattern || tls13.has_0xff_pattern || has_0xff_in_raw;
 
-    println!("\n========================================");
+    tracing::info!("========================================");
     if bug_detected {
-        println!("!!!!! 0xFF PATTERN DETECTED !!!!!");
-        println!("spectrum is returning garbage data instead of valid TLS responses.");
-        println!("this confirms the SSL interception bug.\n");
+        tracing::error!("!!!!! 0xFF PATTERN DETECTED !!!!!");
+        tracing::error!("spectrum is returning garbage data instead of valid TLS responses.");
+        tracing::error!("this confirms the SSL interception bug.\n");
     } else if !tls12.success || !tls13.success {
-        println!("TLS tests failed but no 0xff pattern detected.");
-        println!("the connection issue may have a different cause.\n");
+        tracing::warn!("TLS tests failed but no 0xff pattern detected.");
+        tracing::warn!("the connection issue may have a different cause.\n");
     } else {
-        println!("all tests passed - no SSL interception bug detected.\n");
+        tracing::info!("all tests passed - no SSL interception bug detected.\n");
     }
 
     let result = TestResult {
@@ -436,12 +440,27 @@ async fn main() -> color_eyre::Result<()> {
     let json = serde_json::to_string_pretty(&result).wrap_err("failed to serialize results")?;
     std::fs::write(&result_path, &json).wrap_err("failed to write results")?;
 
-    println!("results saved to: {}", result_path.display());
+    tracing::info!("results saved to: {}", result_path.display());
 
     if bug_detected {
-        println!("\nplease upload your results to:");
-        println!("https://codeberg.org/azzie/spectrum/issues");
+        tracing::info!("please upload your results to:");
+        tracing::info!("https://codeberg.org/azzie/spectrum/issues");
     }
 
+    open_folder(&cli.output);
+
     Ok(())
+}
+
+fn open_folder(path: &std::path::Path) {
+    #[cfg(target_os = "macos")]
+    let cmd = "open";
+    #[cfg(target_os = "windows")]
+    let cmd = "explorer";
+    #[cfg(target_os = "linux")]
+    let cmd = "xdg-open";
+
+    if let Err(e) = std::process::Command::new(cmd).arg(path).spawn() {
+        tracing::debug!("could not open folder: {e}");
+    }
 }
