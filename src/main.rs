@@ -41,7 +41,7 @@ struct TestResult {
     is_spectrum: bool,
     tls12: TlsTestResult,
     tls13: TlsTestResult,
-    ipv6: ConnectionResult,
+    ipv6: Ipv6Result,
     bug_detected: bool,
     raw_bytes_hex: Option<String>,
 }
@@ -56,6 +56,13 @@ struct TlsTestResult {
 
 #[derive(serde::Serialize)]
 struct ConnectionResult {
+    success: bool,
+    error: Option<String>,
+}
+
+#[derive(serde::Serialize)]
+struct Ipv6Result {
+    has_aaaa: bool,
     success: bool,
     error: Option<String>,
 }
@@ -429,22 +436,26 @@ async fn main() -> color_eyre::Result<()> {
         .unwrap_or(false);
 
     tracing::info!("running IPv6 test...");
-    let ipv6_result = test_ipv6(&cli.host).await;
-    if !ipv6_result.has_aaaa {
+    let ipv6_test = test_ipv6(&cli.host).await;
+    if !ipv6_test.has_aaaa {
         tracing::info!("  IPv6: SKIPPED - target has no AAAA record");
-    } else if ipv6_result.connection.success {
+    } else if ipv6_test.connection.success {
         tracing::info!("  IPv6: OK");
     } else {
         tracing::warn!(
             "  IPv6: FAILED - {}",
-            ipv6_result
+            ipv6_test
                 .connection
                 .error
                 .as_deref()
                 .unwrap_or("unknown error")
         );
     }
-    let ipv6 = ipv6_result.connection;
+    let ipv6 = Ipv6Result {
+        has_aaaa: ipv6_test.has_aaaa,
+        success: ipv6_test.connection.success,
+        error: ipv6_test.connection.error,
+    };
 
     let bug_detected = tls12.has_0xff_pattern || tls13.has_0xff_pattern || has_0xff_in_raw;
 
