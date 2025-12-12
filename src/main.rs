@@ -447,20 +447,9 @@ async fn main() -> color_eyre::Result<()> {
         tracing::info!("https://codeberg.org/azzie/spectrum/issues");
     }
 
-    open_folder(&cli.output);
-
-    Ok(())
-}
-
-fn open_folder(path: &std::path::Path) {
-    #[cfg(target_os = "macos")]
-    let cmd = "open";
-    #[cfg(target_os = "windows")]
-    let cmd = "explorer";
-    #[cfg(target_os = "linux")]
-    let cmd = "xdg-open";
-
-    if let Err(e) = std::process::Command::new(cmd).arg(path).spawn() {
+    if let Err(e) = open::that(&cli.output) {
         tracing::debug!("could not open folder: {e}");
     }
+
+    Ok(())
 }
