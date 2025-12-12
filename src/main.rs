@@ -256,22 +256,45 @@ fn build_tls_client_hello(host: &str) -> Vec<u8> {
     hello
 }
 
-async fn test_ipv6(host: &str) -> ConnectionResult {
-    let client = reqwest::Client::builder()
-        .local_address(std::net::IpAddr::V6(std::net::Ipv6Addr::UNSPECIFIED))
-        .build();
+struct Ipv6TestResult {
+    has_aaaa: bool,
+    connection: ConnectionResult,
+}
 
-    let client = match client {
+async fn test_ipv6(host: &str) -> Ipv6TestResult {
+    let addr = format!("{host}:443");
+    let has_aaaa = match tokio::net::lookup_host(&addr).await {
+        Ok(addrs) => addrs.into_iter().any(|a| a.is_ipv6()),
+        Err(_) => false,
+    };
+
+    if !has_aaaa {
+        return Ipv6TestResult {
+            has_aaaa: false,
+            connection: ConnectionResult {
+                success: false,
+                error: Some("target has no AAAA record".to_string()),
+            },
+        };
+    }
+
+    let client = match reqwest::Client::builder()
+        .local_address(std::net::IpAddr::V6(std::net::Ipv6Addr::UNSPECIFIED))
+        .build()
+    {
         Ok(c) => c,
         Err(e) => {
-            return ConnectionResult {
-                success: false,
-                error: Some(format!("failed to create IPv6 client: {e}")),
+            return Ipv6TestResult {
+                has_aaaa: true,
+                connection: ConnectionResult {
+                    success: false,
+                    error: Some(format!("failed to create IPv6 client: {e}")),
+                },
             };
         }
     };
 
-    match client
+    let connection = match client
         .get(format!("https://{host}"))
         .timeout(std::time::Duration::from_secs(10))
         .send()
@@ -285,6 +308,11 @@ async fn test_ipv6(host: &str) -> ConnectionResult {
             success: false,
             error: Some(e.to_string()),
         },
+    };
+
+    Ipv6TestResult {
+        has_aaaa: true,
+        connection,
     }
 }
 
@@ -401,15 +429,22 @@ async fn main() -> color_eyre::Result<()> {
         .unwrap_or(false);
 
     tracing::info!("running IPv6 test...");
-    let ipv6 = test_ipv6(&cli.host).await;
-    if ipv6.success {
+    let ipv6_result = test_ipv6(&cli.host).await;
+    if !ipv6_result.has_aaaa {
+        tracing::info!("  IPv6: SKIPPED - target has no AAAA record");
+    } else if ipv6_result.connection.success {
         tracing::info!("  IPv6: OK");
     } else {
         tracing::warn!(
             "  IPv6: FAILED - {}",
-            ipv6.error.as_deref().unwrap_or("not available")
+            ipv6_result
+                .connection
+                .error
+                .as_deref()
+                .unwrap_or("unknown error")
         );
     }
+    let ipv6 = ipv6_result.connection;
 
     let bug_detected = tls12.has_0xff_pattern || tls13.has_0xff_pattern || has_0xff_in_raw;
 
